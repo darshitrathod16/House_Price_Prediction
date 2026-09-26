@@ -1,77 +1,81 @@
-# 🏠 House Price Prediction
+# House Price Prediction
 
-Predicting house sale prices in Ames, Iowa using machine learning, based on structural, quality, and location-related features. This project covers the full pipeline — cleaning, EDA, feature engineering, model building, hyperparameter tuning, and a business-focused final recommendation.
+- This project predicts the sale price of a house using structural, quality, and location-related features from the Ames Housing dataset. It was done as part of my data science internship project (PRCP-1020).
 
-## 📌 Problem Statement
+## Problem Statement
 
-Home buyers and sellers often rely on guesswork or rough comparisons to decide on a price, which leads to overpricing, underpricing, and confusion in negotiations. This project uses historical sales data to build a model that estimates a fair price for a house and identifies which features actually drive that price.
+- People usually price houses based on guesswork, which often leads to overpricing, underpricing, or confusion about real value. The goal here is to build a model that predicts a fair sale price for a house, explain which features actually drive that price, and suggest good-value homes for buyers working within a budget.
 
-## 📊 Dataset
+## Dataset
 
-- **1,460 houses**, **79 features**, target variable: `SalePrice`
-- Features span lot size, building quality, room counts, garage/basement details, and neighborhood
-- Source: Ames Housing Dataset (Kaggle)
+- The dataset has 1,460 houses with 79 features covering things like lot size, room counts, garage and basement details, build quality, and neighborhood, with `SalePrice` as the target. Two known outliers (very large homes that sold at unusually low prices) were removed, leaving 1,458 rows for modeling.
 
-## 🛠 Tech Stack
+## What I did
 
-- Python, Pandas, NumPy
-- Matplotlib, Seaborn
-- Scikit-learn (Linear Regression, Random Forest, Gradient Boosting)
-- XGBoost
+* Removed 2 known outliers from the dataset before doing anything else.
+* Handled missing values properly, columns like `PoolQC` and `FireplaceQu` don't mean "missing data", they mean the house doesn't have that feature, so these were filled with `'None'` instead of the mode.
+* Did EDA to see which features actually relate to price, `OverallQual`, `GrLivArea`, and `Neighborhood` stood out early on.
+* Noticed `SalePrice` was right-skewed and log-transformed it before training, this alone fixed Linear Regression's R² from 0.099 to 0.91.
+* One-hot encoded categorical columns, taking the feature count from 79 to 259.
+* Trained and compared 4 models: Linear Regression (plus Ridge and Lasso as a check), Random Forest, Gradient Boosting, and XGBoost.
+* Tuned Random Forest and Gradient Boosting using RandomizedSearchCV.
+* Checked train vs test R² for every model to catch overfitting, XGBoost turned out to overfit the most despite looking fine on paper.
+* Looked at feature importance from the final model to see what actually drives price.
 
-## 🔍 Project Workflow
+## Results
 
-1. **Outlier Removal** — dropped 2 well-documented Ames outliers (very large `GrLivArea`, unusually low `SalePrice`)
-2. **Missing Value Treatment** — semantic imputation: columns like `PoolQC`, `FireplaceQu`, and `GarageType` were filled with `'None'` (missing means the feature doesn't exist), not the column mode; `LotFrontage` filled with the neighborhood-wise median
-3. **Exploratory Data Analysis** — distribution checks, correlation heatmap, neighborhood and quality vs. price comparisons
-4. **Feature Engineering** — one-hot encoding of categorical variables, log-transform of `SalePrice` to correct right-skew
-5. **Model Building** — Linear Regression, Random Forest, Gradient Boosting, XGBoost
-6. **Hyperparameter Tuning** — `RandomizedSearchCV` for Random Forest and Gradient Boosting
-7. **Evaluation** — MAE, R², and a train/test R² gap check to screen for overfitting
-8. **Business Insights** — budget-based home filtering and a quality-per-price "value score" to support buyer decisions
+- Gradient Boosting (Tuned) gave the best overall result, with an R² of 0.9220 and MAE of about 14,979 on the test data. It also had one of the smallest gaps between train and test R², so it generalizes well instead of just memorizing the training data. XGBoost had the worst overfitting of all models, near-perfect on training data but the weakest on test data.
 
-## 📈 Model Performance
+- The most useful features turned out to be `OverallQual`, `GrLivArea`, `YearBuilt`, `GarageArea`, and `TotalBsmtSF`.
 
-| Model | MAE | R² |
-|---|---|---|
-| Gradient Boosting (Baseline) | 17,467.78 | 0.9003 |
-| XGBoost | 17,301.80 | 0.8982 |
-| Random Forest (Tuned) | 17,132.92 | 0.8943 |
-| Gradient Boosting (Tuned) | 17,161.62 | 0.8942 |
-| Random Forest (Baseline) | 17,566.91 | 0.8899 |
-| Linear Regression | 23,942.15 | 0.0994 |
+## Business takeaway
 
-*Note: these figures are from the pre-log-transform run and will be updated once the final rerun (outlier removal + log-transformed target) completes.*
+- Predictions are most reliable for homes under $250,000, so that's where this model should be trusted the most. For homes above 300,000 dollers predictions get less accurate and should be treated with more caution. A simple "value score" (quality divided by price) was also built to help buyers spot high-quality homes at a lower cost, mostly found in areas like `IDOTRR` and `Edwards`.
 
-## 🏆 Recommended Model
+## Tools used
 
-**Gradient Boosting (Baseline)** — selected for production. It has the highest test R² and the smallest train/test gap among all models tested, making it the most reliable choice for generalizing to new data, even though a couple of tuned models had a marginally lower MAE.
+- Python, Pandas, NumPy, Matplotlib, Seaborn, Scikit-learn, XGBoost, joblib.
 
-## 💡 Key Insights
+## Files
 
-- `OverallQual` and `GrLivArea` are the strongest price drivers
-- Neighborhood alone can shift price by 2–3x — `NoRidge`, `NridgHt`, and `StoneBr` are premium areas; `MeadowV`, `IDOTRR`, and `BrDale` are the most affordable
-- Plain Linear Regression struggles badly (R² ≈ 0.10) due to multicollinearity from one-hot encoded features — confirmed by comparing against Ridge/Lasso
-- A simple value score (quality ÷ price) surfaces good-value homes that aren't in the cheapest neighborhoods
+# House Price Prediction
 
-## 🚀 How to Run
+- This project predicts the sale price of a house using structural, quality, and location-related features from the Ames Housing dataset. It was done as part of my data science internship project (PRCP-1020).
 
-```bash
-git clone https://github.com/darshitrathod16/house-price-prediction.git
-cd house-price-prediction
-pip install -r requirements.txt
-jupyter notebook House_Price_Prediction.ipynb
-```
+## Problem Statement
 
-## 📁 Repository Structure
+- People usually price houses based on guesswork, which often leads to overpricing, underpricing, or confusion about real value. The goal here is to build a model that predicts a fair sale price for a house, explain which features actually drive that price, and suggest good-value homes for buyers working within a budget.
 
-```
-├── House_Price_Prediction.ipynb   # Full analysis and modeling notebook
-├── data.csv                       # Dataset
-└── README.md
-```
+## Dataset
 
-## 🙋 Author
+- The dataset has 1,460 houses with 79 features covering things like lot size, room counts, garage and basement details, build quality, and neighborhood, with `SalePrice` as the target. Two known outliers (very large homes that sold at unusually low prices) were removed, leaving 1,458 rows for modeling.
 
-**Darshit Rathod**
-[GitHub](https://github.com/darshitrathod16)
+## What I did
+
+* Removed 2 known outliers from the dataset before doing anything else.
+* Handled missing values properly, columns like `PoolQC` and `FireplaceQu` don't mean "missing data", they mean the house doesn't have that feature, so these were filled with `'None'` instead of the mode.
+* Did EDA to see which features actually relate to price, `OverallQual`, `GrLivArea`, and `Neighborhood` stood out early on.
+* Noticed `SalePrice` was right-skewed and log-transformed it before training, this alone fixed Linear Regression's R² from 0.099 to 0.91.
+* One-hot encoded categorical columns, taking the feature count from 79 to 259.
+* Trained and compared 4 models: Linear Regression (plus Ridge and Lasso as a check), Random Forest, Gradient Boosting, and XGBoost.
+* Tuned Random Forest and Gradient Boosting using RandomizedSearchCV.
+* Checked train vs test R² for every model to catch overfitting, XGBoost turned out to overfit the most despite looking fine on paper.
+* Looked at feature importance from the final model to see what actually drives price.
+
+## Results
+
+- Gradient Boosting (Tuned) gave the best overall result, with an R² of 0.9220 and MAE of about 14,979 on the test data. It also had one of the smallest gaps between train and test R², so it generalizes well instead of just memorizing the training data. XGBoost had the worst overfitting of all models, near-perfect on training data but the weakest on test data.
+
+- The most useful features turned out to be `OverallQual`, `GrLivArea`, `YearBuilt`, `GarageArea`, and `TotalBsmtSF`.
+
+## Business takeaway
+
+- Predictions are most reliable for homes under $250,000, so that's where this model should be trusted the most. For homes above 300,000 dollers predictions get less accurate and should be treated with more caution. A simple "value score" (quality divided by price) was also built to help buyers spot high-quality homes at a lower cost, mostly found in areas like `IDOTRR` and `Edwards`.
+
+## Tools used
+
+- Python, Pandas, NumPy, Matplotlib, Seaborn, Scikit-learn, XGBoost, joblib.
+
+## Files
+
+* `House_Price_Prediction.ipynb` - full notebook with EDA, preprocessing, feature engineering, modeling, tuning, and conclusion.
